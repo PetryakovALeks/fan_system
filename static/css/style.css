@@ -1,0 +1,103 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    transition: all 0.3s ease;
+}
+
+body.light {
+    background-color: #fff;
+    color: #000;
+}
+
+body.dark {
+    background-color: #333;
+    color: #fff;
+}
+
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 200px;
+    padding: 20px;
+    box-sizing: border-box;
+    /* Убедимся, что inline-стили имеют приоритет */
+    background-color: inherit; /* Наследуем inline-цвет */
+}
+
+.left-sidebar {
+    background-color: #f0f0f0; /* Цвет по умолчанию, перезаписывается inline-стилем */
+}
+
+.right-sidebar {
+    background-color: #f0f0f0; /* Цвет по умолчанию, перезаписывается inline-стилем */
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+header {
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+}
+
+header a {
+    color: inherit;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+header a:hover {
+    background-color: #ddd;
+}
+
+h2, h3 {
+    margin-top: 0;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+form {
+    margin-top: 20px;
+}
+
+form p {
+    margin: 10px 0;
+}
+
+form button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

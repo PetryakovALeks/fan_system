@@ -1,0 +1,175 @@
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Расписание</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            background-color: #343a40;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .navbar li {
+            margin: 0 15px;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar a:hover {
+            color: #007bff;
+        }
+        .container {
+            display: flex;
+            margin-top: 60px;
+            min-height: calc(100vh - 60px);
+        }
+        .left-panel, .right-panel {
+            width: 200px;
+            min-height: 100%;
+        }
+        .left-panel {
+            background-color: {{ first_preference_color_left }};
+        }
+        .right-panel {
+            background-color: {{ first_preference_color_right }};
+        }
+        .schedule {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #d3d3d3; /* Нейтрально-серый фон */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            cursor: pointer;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        th:hover {
+            background-color: #ddd;
+        }
+        .sort-form {
+            margin-bottom: 10px;
+        }
+        .sort-form button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        .sort-form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        // Отладочный вывод для проверки загрузки CSRF-токена
+        const csrftoken = '{{ csrf_token }}';
+        console.log('CSRF Token:', csrftoken);
+
+        function sortTable(sortBy) {
+            console.log('Sorting by:', sortBy); // Отладочный вывод
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "schedule" %}';
+
+            // Добавляем CSRF-токен
+            var csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrftoken;
+            form.appendChild(csrfInput);
+
+            // Добавляем параметр сортировки
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'sort_by';
+            input.value = sortBy;
+            form.appendChild(input);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+</head>
+<body>
+   <nav class="navbar">
+    <ul>
+        <li><a href="{% url 'profile' %}">Профиль</a></li>
+        <li><a href="{% url 'schedule' %}">Расписание</a></li>
+        <li><a href="{% url 'user_preference_create' %}">Добавить предпочтение</a></li>
+        <li><a href="{% url 'export' %}">Экспорт</a></li>
+        <li><a href="{% url 'league_report_view' %}">Отчёт по лигам</a></li>
+        <li><a href="{% url 'logout' %}">Выйти</a></li>
+    </ul>
+</nav>
+    <div class="container">
+        <div class="left-panel"></div>
+        <div class="schedule">
+            {% csrf_token %} <!-- Добавляем CSRF-токен в шаблон -->
+            <div class="sort-form">
+                <button onclick="sortTable('preference')">Сортировать по предпочтениям</button>
+                <button onclick="sortTable('sport')">Сортировать по видам спорта</button>
+                <button onclick="sortTable('league')">Сортировать по лигам</button>
+                <button onclick="sortTable('date')">Сортировать по датам</button>
+            </div>
+            <h2>Расписание матчей</h2>
+            {% if matches %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Команда</th>
+                            <th>Соперник</th>
+                            <th>Дата</th>
+                            <th>Место</th>
+                            <th>Лига</th>
+                            <th>Вид спорта</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for match in matches %}
+                            <tr>
+                                <td>{{ match.team.name }}</td>
+                                <td>{{ match.opponent.name }}</td>
+                                <td>{{ match.date }}</td>
+                                <td>{{ match.location }}</td>
+                                <td>{{ match.team.league.name }}</td>
+                                <td>{{ match.team.league.sport.name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>Матчи отсутствуют.</p>
+            {% endif %}
+        </div>
+        <div class="right-panel"></div>
+    </div>
+</body>
+</html>

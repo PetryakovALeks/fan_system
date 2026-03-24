@@ -1,0 +1,84 @@
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Отчёт по лигам</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        .navbar { background-color: #343a40; padding: 10px 0; position: fixed; width: 100%; top: 0; z-index: 1000; }
+        .navbar ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; }
+        .navbar li { margin: 0 15px; }
+        .navbar a { color: white; text-decoration: none; font-weight: bold; }
+        .navbar a:hover { color: #007bff; }
+        .container { display: flex; margin-top: 60px; min-height: calc(100vh - 60px); }
+        .left-panel, .right-panel { width: 200px; min-height: 100%; }
+        .left-panel { background-color: {{ first_preference_color_left|default:'#ffffff' }}; }
+        .right-panel { background-color: {{ first_preference_color_right|default:'#ffffff' }}; }
+        .content { flex-grow: 1; padding: 20px; background-color: #d3d3d3; }
+        .league-card { background-color: #fff; border-radius: 5px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .league-card h3 { margin-top: 0; }
+        .team-list, .match-list { list-style: none; padding: 0; }
+        .team-list li, .match-list li { padding: 5px 0; }
+        .add-preference-btn { display: inline-block; margin-bottom: 15px; padding: 5px 10px; background-color: #007bff; color: white; border-radius: 5px; text-decoration: none; }
+        .add-preference-btn:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <ul>
+            <li><a href="{% url 'profile' %}">Профиль</a></li>
+            <li><a href="{% url 'schedule' %}">Расписание</a></li>
+            <li><a href="{% url 'user_preference_create' %}">Добавить предпочтение</a></li>
+            <li><a href="{% url 'export' %}">Экспорт</a></li>
+            <li><a href="{% url 'league_report_view' %}">Отчёт по лигам</a></li>
+            <li><a href="{% url 'logout' %}">Выйти</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="left-panel"></div>
+        <div class="content">
+            <h2>Отчёт по лигам</h2>
+
+            <a href="{% url 'user_preference_create' %}" class="add-preference-btn">Добавить новое предпочтение</a>
+
+            {% for league in leagues %}
+            <div class="league-card">
+                <h3>{{ league.name }} ({{ league.sport.name }})</h3>
+                <p>Количество команд: {{ league.teams.count }}</p>
+
+                <strong>Команды:</strong>
+                <ul class="team-list">
+                    {% for team in league.teams %}
+                    {% if active_preference and active_preference.team.id == team.id %}
+                        <li style="color: {{ active_preference.custom_color_left|default:team.color_left }}; background-color: {{ active_preference.custom_color_right|default:team.color_right }}; padding: 2px 5px; font-weight: bold;">
+                            {{ team.name }} (активное предпочтение)
+                        </li>
+                    {% else %}
+                        <li style="color: {{ team.color_left }}; background-color: {{ team.color_right }}; padding: 2px 5px;">
+                            {{ team.name }}
+                        </li>
+                    {% endif %}
+                    {% empty %}
+                    <li>Нет команд</li>
+                    {% endfor %}
+                </ul>
+
+                <strong>Матчи:</strong>
+                <ul class="match-list">
+                    {% for match in league.matches %}
+                    <li>{{ match.team.name }} vs {{ match.opponent.name }} — {{ match.date|date:"d.m.Y H:i" }} ({{ match.location }})</li>
+                    {% empty %}
+                    <li>Нет матчей</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% empty %}
+            <p>Нет доступных лиг</p>
+            {% endfor %}
+        </div>
+        <div class="right-panel"></div>
+    </div>
+</body>
+</html>

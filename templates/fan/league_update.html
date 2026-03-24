@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Обновить лигу</title>
+    <script>
+        function validateForm() {
+            const name = document.getElementsByName('name')[0].value;
+            const pattern = /^[А-ЯЁ][а-яё]+$/;
+            if (!pattern.test(name)) {
+                alert("Имя лиги должно начинаться с заглавной буквы и содержать только кириллические буквы.");
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+<body>
+    <h2>Обновить лигу</h2>
+    <form method="post" onsubmit="return validateForm()">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Обновить</button>
+        {% if errors %}<p style="color: red;">{{ errors.name.0 }}</p>{% endif %}
+    </form>
+    <a href="{% url 'league_list' %}">Назад к списку</a>
+</body>
+</html>

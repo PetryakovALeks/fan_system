@@ -1,0 +1,227 @@
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Профиль</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            background-color: #343a40;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .navbar li {
+            margin: 0 15px;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar a:hover {
+            color: #007bff;
+        }
+        .container {
+            display: flex;
+            margin-top: 60px;
+            min-height: calc(100vh - 60px);
+        }
+        .left-panel, .right-panel {
+            width: 200px;
+            min-height: 100%;
+        }
+        .left-panel {
+            background-color: {{ first_preference_color_left }};
+        }
+        .right-panel {
+            background-color: {{ first_preference_color_right }};
+        }
+        .schedule {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #d3d3d3; /* Нейтрально-серый фон */
+        }
+        .personal-info {
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .password-form, .preference-list {
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .preference-list ul {
+            list-style: none;
+            padding: 0;
+        }
+        .preference-item {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .preference-item form {
+            display: inline-flex;
+            gap: 5px;
+        }
+        .preference-item button.select-btn {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .preference-item button.select-btn:hover {
+            background-color: #0056b3;
+        }
+        .preference-item input[type="submit"] {
+            padding: 5px 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .preference-item input[type="submit"]:hover {
+            background-color: #c82333;
+        }
+        .preference-item input[type="color"] {
+            padding: 2px;
+            width: 40px;
+            height: 25px;
+            cursor: pointer;
+        }
+        .password-form form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .password-form label {
+            margin-right: 10px;
+        }
+        .password-form input {
+            padding: 5px;
+            width: 100%;
+            max-width: 300px;
+        }
+        .password-form button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: fit-content;
+        }
+        .password-form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <ul>
+            <li><a href="{% url 'profile' %}">Профиль</a></li>
+            <li><a href="{% url 'schedule' %}">Расписание</a></li>
+            <li><a href="{% url 'user_preference_create' %}">Добавить предпочтение</a></li>
+            <li><a href="{% url 'export' %}">Экспорт</a></li>
+            <li><a href="{% url 'league_report_view' %}">Отчёт по лигам</a></li>
+            <li><a href="{% url 'logout' %}">Выйти</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <div class="left-panel"></div>
+        <div class="schedule">
+            <div class="personal-info">
+                <h3>Личная информация</h3>
+                <p>Имя: {{ user.first_name }}</p>
+                <p>Фамилия: {{ user.last_name }}</p>
+                <p>Отчество: {{ user.patronymic }}</p>
+                <p>Email: {{ user.email }}</p>
+            </div>
+            <div class="password-form">
+                <h3>Сменить пароль</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="change_password" value="1">
+                    <!-- Кастомный рендеринг формы для перевода -->
+                    <div class="form-group">
+                        <label for="id_old_password">Старый пароль:</label>
+                        <input type="password" name="old_password" id="id_old_password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_new_password1">Новый пароль:</label>
+                        <input type="password" name="new_password1" id="id_new_password1" required>
+                        <small>Ваш пароль не должен быть слишком похож на вашу личную информацию. Пароль должен содержать не менее 8 символов. Пароль не должен быть слишком распространённым.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_new_password2">Подтверждение нового пароля:</label>
+                        <input type="password" name="new_password2" id="id_new_password2" required>
+                        <small>Введите тот же пароль ещё раз для подтверждения.</small>
+                    </div>
+                    <button type="submit">Сменить пароль</button>
+                </form>
+            </div>
+            <div class="preference-list">
+                <h2>Ваши предпочтения</h2>
+                <ul>
+                    {% for pref in preferences %}
+                        <li class="preference-item">
+                            {{ pref.team.name }} ({{ pref.team.league.sport.name }} - {{ pref.team.league.name }})
+                            {% with colors=team_colors|get_item:pref.id %}
+                                <form method="post" style="display:inline-flex; gap: 5px;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="select_preference" value="1">
+                                    <input type="hidden" name="preference_id" value="{{ pref.id }}">
+                                    <button type="submit" class="select-btn">Выбрать</button>
+                                </form>
+                                <form method="post" style="display:inline-flex; gap: 5px;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="update_colors" value="1">
+                                    <input type="hidden" name="preference_id" value="{{ pref.id }}">
+                                    <input type="color" name="color_left" value="{{ colors.color_left|default:pref.team.color_left }}">
+                                    <input type="color" name="color_right" value="{{ colors.color_right|default:pref.team.color_right }}">
+                                    <input type="submit" value="Обновить цвета">
+                                </form>
+                                <form method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="delete_preference" value="1">
+                                    <input type="hidden" name="preference_id" value="{{ pref.id }}">
+                                    <button type="submit">Удалить</button>
+                                </form>
+                            {% endwith %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="right-panel"></div>
+    </div>
+    {% if message %}
+        <p style="color: green; text-align: center;">{{ message }}</p>
+    {% endif %}
+    {% if error %}
+        <p style="color: red; text-align: center;">{{ error }}</p>
+    {% endif %}
+</body>
+</html>

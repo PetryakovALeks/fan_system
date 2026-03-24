@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Удалить матч</title>
+</head>
+<body>
+    <h2>Удалить матч {{ match.team.name }} vs {{ match.opponent }}?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Удалить</button>
+    </form>
+    <a href="{% url 'match_list' %}">Отмена</a>
+</body>
+</html>

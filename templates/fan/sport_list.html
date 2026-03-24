@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Список спортов</title>
+</head>
+<body>
+    <h2>Список спортов</h2>
+    <ul>
+        {% for sport in sports %}
+            <li>{{ sport.name }} <a href="{% url 'sport_update' sport.pk %}">Обновить</a> <a href="{% url 'sport_delete' sport.pk %}">Удалить</a></li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'sport_create' %}">Добавить спорт</a>
+</body>
+</html>

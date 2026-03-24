@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Отчёт по лигам</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; }
+        .navbar { background-color: #343a40; padding: 10px; color: white; }
+        .navbar a { color: white; text-decoration: none; margin-right: 15px; font-weight: bold; }
+        .container { padding: 20px; }
+        .league-card { background-color: #f8f9fa; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .team-list li, .match-list li { padding: 3px 5px; margin: 2px 0; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="{% url 'profile' %}">Профиль</a>
+    </div>
+    <div class="container">
+        <h1>Отчёт по лигам</h1>
+        {% for item in leagues_with_data %}
+        <div class="league-card">
+            <h2>{{ item.league.name }} ({{ item.league.sport.name }})</h2>
+
+            <strong>Команды:</strong>
+            <ul class="team-list">
+                {% for team in item.teams %}
+                    {% if active_preference and active_preference.team.id == team.id %}
+                        <li style="color: {{ active_preference.custom_color_left|default:team.color_left }}; background-color: {{ active_preference.custom_color_right|default:team.color_right }}; font-weight: bold;">
+                            {{ team.name }} (активное предпочтение)
+                        </li>
+                    {% else %}
+                        <li style="color: {{ team.color_left }}; background-color: {{ team.color_right }};">
+                            {{ team.name }}
+                        </li>
+                    {% endif %}
+                {% empty %}
+                    <li>Нет команд</li>
+                {% endfor %}
+            </ul>
+
+            <strong>Матчи:</strong>
+            <ul class="match-list">
+                {% for match in item.matches %}
+                    <li>{{ match.team.name }} vs {{ match.opponent.name }} — {{ match.date|date:"d.m.Y H:i" }} ({{ match.location }})</li>
+                {% empty %}
+                    <li>Нет матчей</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% empty %}
+            <p>Нет доступных лиг</p>
+        {% endfor %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Обновить команду</title>
+    <script>
+        function validateForm() {
+            const name = document.getElementsByName('name')[0].value;
+            const colorLeft = document.getElementsByName('color_left')[0].value;
+            const colorRight = document.getElementsByName('color_right')[0].value;
+            const namePattern = /^[А-ЯЁ][а-яё]+$/;
+            const colorPattern = /^#[0-9A-Fa-f]{6}$/;
+            if (!namePattern.test(name)) {
+                alert("Имя команды должно начинаться с заглавной буквы и содержать только кириллические буквы.");
+                return false;
+            }
+            if (!colorPattern.test(colorLeft)) {
+                alert("Цвет левой панели должен быть в формате HEX (например, #RRGGBB).");
+                return false;
+            }
+            if (!colorPattern.test(colorRight)) {
+                alert("Цвет правой панели должен быть в формате HEX (например, #RRGGBB).");
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+<body>
+    <h2>Обновить команду</h2>
+    <form method="post" onsubmit="return validateForm()">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Обновить</button>
+        {% if errors %}<p style="color: red;">{{ errors.name.0 }}{{ errors.color_left.0 }}{{ errors.color_right.0 }}</p>{% endif %}
+    </form>
+    <a href="{% url 'team_list' %}">Назад к списку</a>
+</body>
+</html>

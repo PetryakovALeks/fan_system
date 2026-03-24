@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Список матчей</title>
+</head>
+<body>
+    <h2>Список матчей</h2>
+    <ul>
+        {% for match in matches %}
+            <li>{{ match.team.name }} vs {{ match.opponent }} ({{ match.date }} at {{ match.location }}) <a href="{% url 'match_update' match.pk %}">Обновить</a> <a href="{% url 'match_delete' match.pk %}">Удалить</a></li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'match_create' %}">Добавить матч</a>
+</body>
+</html>

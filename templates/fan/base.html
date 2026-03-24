@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Информационная система болельщика</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="{% if theme == 'dark' %}dark{% else %}light{% endif %}">
+    <div class="layout">
+        <!-- Левая боковая панель -->
+        <aside class="sidebar left-sidebar" style="background-color: {% if user.is_authenticated and preferences %}{{ preferences.0.team.color_left }}{% else %}#f0f0f0{% endif %};">
+            <h3>Ваши команды</h3>
+            <ul>
+                {% if user.is_authenticated and preferences %}
+                    {% for pref in preferences %}
+                        <li>{{ pref.team.name }}</li>
+                    {% endfor %}
+                {% else %}
+                    <li>Выберите команду в <a href="{% url 'preferences' %}">предпочтениях</a></li>
+                {% endif %}
+            </ul>
+        </aside>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <header>
+                <a href="{% url 'set_theme' %}?theme={% if theme == 'dark' %}light{% else %}dark{% endif %}">
+                    Сменить тему (текущая: {{ theme }})
+                </a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}">Профиль</a>
+                    <a href="{% url 'preferences' %}">Предпочтения</a>
+                {% else %}
+                    <a href="{% url 'login' %}">Войти</a>
+                {% endif %}
+            </header>
+            {% block content %}
+            {% endblock %}
+        </main>
+
+        <!-- Правая боковая панель -->
+        <aside class="sidebar right-sidebar" style="background-color: {% if user.is_authenticated and preferences %}{{ preferences.0.team.color_right }}{% else %}#f0f0f0{% endif %};">
+            <h3>Ваши команды</h3>
+            <ul>
+                {% if user.is_authenticated and preferences %}
+                    {% for pref in preferences %}
+                        <li>{{ pref.team.name }}</li>
+                    {% endfor %}
+                {% else %}
+                    <li>Выберите команду в <a href="{% url 'preferences' %}">предпочтениях</a></li>
+                {% endif %}
+            </ul>
+        </aside>
+    </div>
+</body>
+</html>

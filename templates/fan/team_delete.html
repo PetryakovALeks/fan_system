@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Удалить команду</title>
+</head>
+<body>
+    <h2>Удалить команду {{ team.name }}?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Удалить</button>
+    </form>
+    <a href="{% url 'team_list' %}">Отмена</a>
+</body>
+</html>

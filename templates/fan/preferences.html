@@ -1,0 +1,36 @@
+{% extends "fan/base.html" %}
+
+{% block content %}
+<h2>Настройка предпочтений</h2>
+<form method="post" id="preference-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Сохранить</button>
+</form>
+<a href="{% url 'profile' %}">Вернуться в профиль</a>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sportSelect = document.querySelector('select[name="sport"]');
+        const teamSelect = document.querySelector('select[name="team"]');
+
+        sportSelect.addEventListener('change', function() {
+            const sportId = this.value;
+            teamSelect.innerHTML = '<option value="">---------</option>'; // Очистка списка команд
+
+            if (sportId) {
+                fetch(`/get_teams/?sport_id=${sportId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.teams.forEach(team => {
+                            const option = document.createElement('option');
+                            option.value = team.id;
+                            option.text = team.name;
+                            teamSelect.appendChild(option);
+                        });
+                    });
+            }
+        });
+    });
+</script>
+{% endblock %}

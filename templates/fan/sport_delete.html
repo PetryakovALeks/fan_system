@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Удалить спорт</title>
+</head>
+<body>
+    <h2>Удалить спорт {{ sport.name }}?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Удалить</button>
+    </form>
+    <a href="{% url 'sport_list' %}">Отмена</a>
+</body>
+</html>

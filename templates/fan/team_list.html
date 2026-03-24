@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Список команд</title>
+</head>
+<body>
+    <h2>Список команд</h2>
+    <ul>
+        {% for team in teams %}
+            <li>{{ team.name }} ({{ team.league.name }}) - Left: {{ team.color_left }}, Right: {{ team.color_right }} <a href="{% url 'team_update' team.pk %}">Обновить</a> <a href="{% url 'team_delete' team.pk %}">Удалить</a></li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'team_create' %}">Добавить команду</a>
+</body>
+</html>

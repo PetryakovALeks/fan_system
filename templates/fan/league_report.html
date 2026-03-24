@@ -1,0 +1,132 @@
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Отчёт по лигам и предпочтениям</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        .navbar { background-color: #343a40; padding: 10px 0; position: fixed; width: 100%; top: 0; z-index: 1000; }
+        .navbar ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; }
+        .navbar li { margin: 0 15px; }
+        .navbar a { color: white; text-decoration: none; font-weight: bold; }
+        .navbar a:hover { color: #007bff; }
+        .container { display: flex; margin-top: 60px; min-height: calc(100vh - 60px); }
+        .left-panel, .right-panel { width: 220px; min-height: 100%; padding: 20px; }
+        .left-panel { background-color: {{ first_preference_color_left|default:'#ffffff' }}; }
+        .right-panel { background-color: {{ first_preference_color_right|default:'#ffffff' }}; }
+        .content { flex-grow: 1; padding: 20px; background-color: #d3d3d3; }
+        .league-card { background-color: #fff; border-radius: 5px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .league-card h3 { margin-top: 0; }
+        .team-list, .match-list { list-style: none; padding: 0; }
+        .team-list li, .match-list li { padding: 5px 0; }
+        .filter-section { margin-bottom: 20px; }
+        .generate-btn { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .generate-btn:hover { background-color: #0056b3; }
+        .preview-section { margin-top: 20px; padding: 10px; background-color: #fff; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <ul>
+        <li><a href="{% url 'profile' %}">Профиль</a></li>
+        <li><a href="{% url 'schedule' %}">Расписание</a></li>
+        <li><a href="{% url 'user_preference_create' %}">Добавить предпочтение</a></li>
+        <li><a href="{% url 'export' %}">Экспорт</a></li>
+        <li><a href="{% url 'league_report_view' %}">Отчёт по лигам</a></li>
+        <li><a href="{% url 'logout' %}">Выйти</a></li>
+    </ul>
+</nav>
+
+<div class="container">
+    <div class="left-panel">
+        <form method="post">
+            {% csrf_token %}
+            <div class="filter-section">
+                <label for="sport">Вид спорта:</label>
+                <select name="sport" id="sport" onchange="this.form.submit();">
+                    <option value="">Все виды спорта</option>
+                    {% for sport in sports %}
+                        <option value="{{ sport.id }}" {% if sport.id|stringformat:"s" == selected_sport_id|stringformat:"s" %}selected{% endif %}>
+                            {{ sport.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-section">
+                <strong>Лиги:</strong><br>
+                {% for league in leagues %}
+                    <input type="checkbox" name="leagues" value="{{ league.id }}" id="league{{ league.id }}"
+                    {% if league.id|stringformat:"s" in selected_league_ids %}checked{% endif %}>
+                    <label for="league{{ league.id }}">{{ league.name }}</label><br>
+                {% empty %}<p>Нет лиг</p>{% endfor %}
+            </div>
+
+            <div class="filter-section">
+                <strong>Предпочтения:</strong><br>
+                {% for pref in preferences %}
+                    <input type="checkbox" name="preferences" value="{{ pref.id }}" id="pref{{ pref.id }}"
+                    {% if pref.id|stringformat:"s" in selected_preference_ids %}checked{% endif %}>
+                    <label for="pref{{ pref.id }}">{{ pref.team.name }} ({{ pref.team.league.sport.name }} - {{ pref.team.league.name }})</label><br>
+                {% empty %}<p>Нет предпочтений</p>{% endfor %}
+            </div>
+
+            <button type="submit" name="generate_preview" class="generate-btn">Показать превью отчёта</button>
+        </form>
+    </div>
+
+    <div class="content">
+        {% if preview_report %}
+            <div class="preview-section">
+                <h2>Превью отчёта</h2>
+                {% for league in leagues %}
+                    {% if league.id|stringformat:"s" in selected_league_ids %}
+                        <div class="league-card">
+                            <h3>{{ league.name }} ({{ league.sport.name }})</h3>
+
+                            <strong>Команды:</strong>
+                            <ul class="team-list">
+                                {% for team in league.teams.all %}
+                                    {% if active_preference and active_preference.team.id == team.id %}
+                                        <li style="color: {{ active_preference.custom_color_left|default:team.color_left }}; background-color: {{ active_preference.custom_color_right|default:team.color_right }}; font-weight: bold;">
+                                            {{ team.name }} (активное предпочтение)
+                                        </li>
+                                    {% else %}
+                                        <li>{{ team.name }}</li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+
+                            <strong>Матчи:</strong>
+                            <ul class="match-list">
+                                {% for match in league.matches_list %}
+                                    {% if not selected_preference_ids or match.team.id|stringformat:"s" in selected_preference_ids or match.opponent.id|stringformat:"s" in selected_preference_ids %}
+                                        <li>{{ match.team.name }} vs {{ match.opponent.name }} — {{ match.date|date:"d.m.Y H:i" }} ({{ match.location }})</li>
+                                    {% endif %}
+                                {% empty %}
+                                    <li>Нет матчей</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="sport" value="{{ selected_sport_id }}">
+                    {% for lid in selected_league_ids %}
+                        <input type="hidden" name="leagues" value="{{ lid }}">
+                    {% endfor %}
+                    {% for pid in selected_preference_ids %}
+                        <input type="hidden" name="preferences" value="{{ pid }}">
+                    {% endfor %}
+                    <button type="submit" name="save_word" class="generate-btn">Сохранить в Word</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="right-panel"></div>
+</div>
+</body>
+</html>

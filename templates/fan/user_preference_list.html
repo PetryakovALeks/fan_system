@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Список предпочтений</title>
+</head>
+<body>
+    <h2>Ваши предпочтения</h2>
+    <ul>
+        {% for preference in preferences %}
+            <li>{{ preference.team.name }} <a href="{% url 'user_preference_update' preference.pk %}">Обновить</a> <a href="{% url 'user_preference_delete' preference.pk %}">Удалить</a></li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'user_preference_create' %}">Добавить предпочтение</a>
+</body>
+</html>

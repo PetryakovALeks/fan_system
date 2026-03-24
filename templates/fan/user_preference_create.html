@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор предпочтений</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            text-align: center;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            color: #333333;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        label {
+            display: block;
+            color: #555555;
+            margin-bottom: 5px;
+        }
+        select, button {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            color: #333333;
+        }
+        select:disabled {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+        button {
+            background-color: #666666;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #555555;
+        }
+        .errors {
+            color: #ff3333;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: #666666;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #666666;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sportSelect = document.getElementById('id_sport');
+            const leagueSelect = document.getElementById('id_league');
+            const teamSelect = document.getElementById('id_team');
+            const loadingIndicator = document.getElementById('loading');
+
+            sportSelect.addEventListener('change', function() {
+                const sportId = this.value;
+                console.log('Выбранный ID спорта:', sportId);
+                leagueSelect.innerHTML = '<option value="">---------</option>';
+                teamSelect.innerHTML = '<option value="">---------</option>';
+                if (sportId) {
+                    fetch(`/get_leagues/?sport_id=${sportId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Данные лиг:', data);
+                            data.forEach(league => {
+                                const option = document.createElement('option');
+                                option.value = league.id;
+                                option.textContent = league.name;
+                                leagueSelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Ошибка при загрузке лиг:', error));
+                }
+            });
+
+            leagueSelect.addEventListener('change', function() {
+                const leagueId = this.value;
+                console.log('Выбранный ID лиги:', leagueId);
+                teamSelect.innerHTML = '<option value="">---------</option>';
+                if (leagueId) {
+                    loadingIndicator.style.display = 'block';
+                    teamSelect.disabled = true;
+                    fetch(`/get_teams/?league_id=${leagueId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Данные команд:', data);
+                            data.forEach(team => {
+                                const option = document.createElement('option');
+                                option.value = team.id;
+                                option.textContent = team.name;
+                                teamSelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Ошибка при загрузке команд:', error))
+                        .finally(() => {
+                            loadingIndicator.style.display = 'none';
+                            teamSelect.disabled = false;
+                        });
+                }
+            });
+
+            sportSelect.dispatchEvent(new Event('change'));
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Выбор предпочтений</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_sport">Вид спорта:</label>
+                {{ form.sport }}
+                {% if form.sport.errors %}
+                    <div class="errors">
+                        {{ form.sport.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_league">Лига:</label>
+                {{ form.league }}
+                {% if form.league.errors %}
+                    <div class="errors">
+                        {{ form.league.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_team">Команда:</label>
+                {{ form.team }}
+                <span id="loading" class="loading">Загрузка...</span>
+                {% if form.team.errors %}
+                    <div class="errors">
+                        {{ form.team.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            <button type="submit">Сохранить</button>
+        </form>
+        {% if form.non_field_errors %}
+            <div class="errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+        <a href="{% url 'profile' %}" class="back-link">Назад</a>
+    </div>
+</body>
+</html>

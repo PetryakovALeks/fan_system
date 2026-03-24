@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Обновить предпочтение</title>
+    <script>
+        function validateForm() {
+            return true; // Проверка на стороне сервера
+        }
+    </script>
+</head>
+<body>
+    <h2>Обновить предпочтение</h2>
+    <form method="post" onsubmit="return validateForm()">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Обновить</button>
+        {% if errors %}<p style="color: red;">{{ errors.team.0 }}</p>{% endif %}
+    </form>
+    <a href="{% url 'user_preference_list' %}">Назад к списку</a>
+</body>
+</html>
